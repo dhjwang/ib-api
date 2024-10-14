@@ -7,6 +7,7 @@ import users from "./routes/users.js";
 import lobbies from "./routes/lobbies.js";
 import scores from "./routes/scores.js";
 import dotenv from "dotenv";
+import cors from "cors";
 
 db.on("connection", (connection) => {
   console.log("DB connected");
@@ -33,6 +34,11 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(
+  cors({
+    origin: "https://dhjwang.github.io/",
+  })
+);
 
 const PORT = process.env.PORT || 3001;
 
