@@ -34,7 +34,8 @@ app.use(
       maxAge: 60000 * 15,
       secure: true,
       httpOnly: true,
-      sameSite: "none",
+      sameSite: "lax",
+      // domain:'https://ib-api.onrender.com'
     },
   })
 );
