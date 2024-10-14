@@ -36,7 +36,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(
   cors({
-    origin: "https://dhjwang.github.io/",
+    origin: "https://dhjwang.github.io",
   })
 );
 
