@@ -74,10 +74,11 @@ app.use("/api/proxy", async (req, res) => {
     const response = await fetch(accessURL, {
       method: req.method,
       headers: {
-        ...req.headers,
+        Accept: "application/json",
+        "Content-Type": "application/json",
         host: undefined,
       },
-      body: req.body ? req.body : null,
+      body: req.method === "GET" ? null : req.body,
     });
     // console.log("response went throguh");
     // console.log(response);
