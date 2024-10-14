@@ -35,7 +35,7 @@ app.use(
       secure: true,
       httpOnly: true,
       sameSite: "lax",
-      // domain:'https://ib-api.onrender.com'
+      domain: "https://ib-api.onrender.com",
     },
   })
 );
