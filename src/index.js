@@ -23,14 +23,12 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.set("trust proxy", 1);
+// app.set("trust proxy", 1);
 app.use(
   session({
     secret: process.env.SECRET,
     saveUninitialized: false,
     resave: false,
-    // resave: true,
-
     rolling: true,
     cookie: { maxAge: 60000 * 15, secure: true },
   })
@@ -40,6 +38,7 @@ app.use(passport.session());
 app.use(
   cors({
     origin: "https://dhjwang.github.io",
+    credentials: true,
   })
 );
 
