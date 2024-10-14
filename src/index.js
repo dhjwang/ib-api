@@ -28,8 +28,10 @@ app.use(
     secret: process.env.SECRET,
     saveUninitialized: false,
     resave: false,
+    // resave: true,
+
     rolling: true,
-    cookie: { maxAge: 60000 * 15, secure: true },
+    cookie: { maxAge: 60000 * 15, secure: false },
   })
 );
 app.use(passport.initialize());
