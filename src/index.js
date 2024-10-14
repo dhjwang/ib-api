@@ -53,15 +53,16 @@ app.use("/", users);
 app.use("/", lobbies);
 app.use("/", scores);
 
-const sessions = {};
+// const sessions = {};
 
 // login
 app.post("/api/auth", passport.authenticate("local"), (req, res) => {
-  sessions[req.session.id] = req.user[0];
-  console.log(sessions);
+  // sessions[req.session.id] = req.user[0];
+  // console.log(sessions);
 
   if (req.user) {
-    res.send({ data: `${req.sessionID}` });
+    // res.send({ data: `${req.sessionID}` });
+    res.send({ data: `${req.user[0]}` });
   } else {
     res.sendStatus(201);
   }
