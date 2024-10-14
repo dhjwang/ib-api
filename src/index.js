@@ -77,7 +77,7 @@ app.use("/api/proxy", async (req, res) => {
         ...req.headers,
         host: undefined,
       },
-      body: req.method === "GET" ? null : req.body,
+      body: req.body,
     });
     // console.log("response went throguh");
     // console.log(response);
