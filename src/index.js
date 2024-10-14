@@ -23,6 +23,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.set("trust proxy", 1);
 app.use(
   session({
     secret: process.env.SECRET,
@@ -31,7 +32,7 @@ app.use(
     // resave: true,
 
     rolling: true,
-    cookie: { maxAge: 60000 * 15, secure: false },
+    cookie: { maxAge: 60000 * 15, secure: true },
   })
 );
 app.use(passport.initialize());
