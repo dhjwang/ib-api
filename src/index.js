@@ -63,10 +63,12 @@ app.use("/", lobbies);
 app.use("/", scores);
 
 app.use("/api/proxy", async (req, res) => {
-  const accessURL = `https://ib-api.onrender.com${req.url.replace(
-    "/api/proxy",
-    ""
-  )}`;
+  const accessURL = `https://ib-api.onrender.com${
+    req.url
+    // .replace(
+    // "/api/proxy",
+    // "")
+  }`;
   console.log(req.url);
   try {
     const response = await fetch(accessURL, {
