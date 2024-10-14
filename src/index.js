@@ -79,10 +79,10 @@ app.use("/api/proxy", async (req, res) => {
       },
       body: req.method === "GET" ? null : req.body,
     });
-    console.log("response went throguh");
-    console.log(response);
-    const data = await response.json();
-    res.status(response.status).json(data);
+    // console.log("response went throguh");
+    // console.log(response);
+    // const data = await response.json(); .json(data);
+    res.status(response.status);
   } catch (err) {
     console.log(err);
     res.status(500).json({ error: "Proxy failed" });
