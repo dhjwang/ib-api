@@ -29,7 +29,7 @@ app.use(
     saveUninitialized: false,
     resave: false,
     rolling: true,
-    cookie: { maxAge: 60000 * 15 },
+    cookie: { maxAge: 60000 * 15, secure: true },
   })
 );
 app.use(passport.initialize());
@@ -58,11 +58,11 @@ app.use("/", scores);
 // login
 app.post("/api/auth", passport.authenticate("local"), (req, res) => {
   // sessions[req.session.id] = req.user[0];
-  // console.log(sessions);
+  console.log(req.session.id);
 
   if (req.user) {
-    // res.send({ data: `${req.sessionID}` });
-    res.send({ data: `${req.user[0]}` });
+    res.send({ data: `${req.sessionID}` });
+    // res.send({ data: `${req.user[0]}` });
   } else {
     res.sendStatus(201);
   }
@@ -72,7 +72,7 @@ app.post("/api/auth", passport.authenticate("local"), (req, res) => {
 app.get("/api/auth/status", (req, res) => {
   console.log(`status:`);
   console.log(req.user);
-  console.log(req.session);
+  // console.log(req.session);
   console.log(req.sessionID);
   if (req.user) return res.send(req.user);
   return res.sendStatus(201);
