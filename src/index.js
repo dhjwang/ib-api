@@ -69,6 +69,7 @@ app.use("/api/proxy", async (req, res) => {
     // "")
   }`;
   console.log(req.url);
+  console.log(accessURL);
   try {
     const response = await fetch(accessURL, {
       method: req.method,
@@ -78,6 +79,8 @@ app.use("/api/proxy", async (req, res) => {
       },
       body: req.method === "GET" ? null : req.body,
     });
+    console.log("response went throguh");
+    console.log(response);
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (err) {
