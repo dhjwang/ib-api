@@ -8,7 +8,6 @@ import lobbies from "./routes/lobbies.js";
 import scores from "./routes/scores.js";
 import dotenv from "dotenv";
 import cors from "cors";
-import fetch from "node-fetch";
 
 db.on("connection", (connection) => {
   console.log("DB connected");
