@@ -23,7 +23,7 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.set("trust proxy", 1);
+// app.set("trust proxy", 1);
 app.use(
   session({
     secret: process.env.SECRET,
@@ -34,8 +34,8 @@ app.use(
       maxAge: 60000 * 15,
       secure: true,
       httpOnly: true,
-      sameSite: "lax",
-      domain: "https://ib-api.onrender.com",
+      sameSite: "none",
+      // domain: "https://ib-api.onrender.com",
     },
   })
 );
