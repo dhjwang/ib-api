@@ -82,12 +82,18 @@ app.use("/api/proxy", async (req, res) => {
     });
     // console.log("response went throguh");
 
-    console.log(response);
-    // const data = await response.json(); .json(data);
-    res.status(response.status);
+    // console.log(response);
+    // if (req.method === "GET") {
+    //   res.status(response.status);
+    // } else {
+    const data = await response.json();
+    res.status(response.status).json(data);
+    // }
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: "Proxy failed" });
+    // console.log(err);
+    // res.status(500).json({ error: "Proxy failed" });
+
+    res.status(response.status);
   }
 });
 // const sessions = {};
