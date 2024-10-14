@@ -78,9 +78,10 @@ app.use("/api/proxy", async (req, res) => {
         "Content-Type": "application/json",
         host: undefined,
       },
-      body: req.method === "GET" ? null : req.body,
+      body: req.method === "GET" ? null : JSON.stringify(req.body),
     });
     // console.log("response went throguh");
+
     console.log(response);
     // const data = await response.json(); .json(data);
     res.status(response.status);
