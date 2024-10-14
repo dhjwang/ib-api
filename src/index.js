@@ -81,7 +81,7 @@ app.use("/api/proxy", async (req, res) => {
       body: req.method === "GET" ? null : req.body,
     });
     // console.log("response went throguh");
-    // console.log(response);
+    console.log(response);
     // const data = await response.json(); .json(data);
     res.status(response.status);
   } catch (err) {
