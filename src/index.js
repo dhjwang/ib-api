@@ -8,6 +8,7 @@ import lobbies from "./routes/lobbies.js";
 import scores from "./routes/scores.js";
 import dotenv from "dotenv";
 import cors from "cors";
+import fetch from "node-fetch";
 
 db.on("connection", (connection) => {
   console.log("DB connected");
@@ -61,16 +62,33 @@ app.use("/", users);
 app.use("/", lobbies);
 app.use("/", scores);
 
+app.use("/api/proxy", async (req, res) => {
+  const accessURL = `https://ib-api.onrender.com${req.url.replace(
+    "/api/proxy",
+    ""
+  )}`;
+  try {
+    const response = await fetch(accessURL, {
+      method: req.method,
+      headers: {
+        ...req.headers,
+        host: undefined,
+      },
+      body: req.method === "GET" ? null : req.body,
+    });
+    const data = await response.json();
+    res.status(response.status).json(data);
+  } catch (err) {
+    res.status(500).json({ error: "Proxy failed" });
+  }
+});
 // const sessions = {};
 
 // login
 app.post("/api/auth", passport.authenticate("local"), (req, res) => {
-  // sessions[req.session.id] = req.user[0];
   console.log(req.session.id);
-
   if (req.user) {
     res.send({ data: `${req.sessionID}` });
-    // res.send({ data: `${req.user[0]}` });
   } else {
     res.sendStatus(201);
   }
@@ -80,7 +98,6 @@ app.post("/api/auth", passport.authenticate("local"), (req, res) => {
 app.get("/api/auth/status", (req, res) => {
   console.log(`status:`);
   console.log(req.user);
-  // console.log(req.session);
   console.log(req.sessionID);
   if (req.user) return res.send(req.user);
   return res.sendStatus(201);
