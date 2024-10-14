@@ -86,14 +86,17 @@ app.use("/api/proxy", async (req, res) => {
     // if (req.method === "GET") {
     //   res.status(response.status);
     // } else {
-    const data = await response.json();
-    res.status(response.status).json(data);
+    try {
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } catch (err) {
+      res.status(response.status);
+    }
+
     // }
   } catch (err) {
-    // console.log(err);
-    // res.status(500).json({ error: "Proxy failed" });
-
-    res.status(response.status);
+    console.log(err);
+    res.status(500).json({ error: "Proxy failed" });
   }
 });
 // const sessions = {};
