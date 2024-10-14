@@ -86,6 +86,11 @@ app.use("/api/proxy", async (req, res) => {
     // if (req.method === "GET") {
     //   res.status(response.status);
     // } else {
+
+    const cookies = response.headers.get("set-cookie");
+    if (cookies) {
+      res.setHeader("Set-Cookie", cookies);
+    }
     try {
       const data = await response.json();
       res.status(response.status).json(data);
