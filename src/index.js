@@ -67,6 +67,7 @@ app.use("/api/proxy", async (req, res) => {
     "/api/proxy",
     ""
   )}`;
+  console.log(req.url);
   try {
     const response = await fetch(accessURL, {
       method: req.method,
@@ -79,6 +80,7 @@ app.use("/api/proxy", async (req, res) => {
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: "Proxy failed" });
   }
 });
