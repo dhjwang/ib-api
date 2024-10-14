@@ -73,9 +73,7 @@ app.use("/api/proxy", async (req, res) => {
     const response = await fetch(accessURL, {
       method: req.method,
       headers: {
-        Accept: "application/json",
-
-        "Content-Type": "application/json",
+        ...req.headers,
         host: undefined,
       },
       body: req.method === "GET" ? null : req.body,
