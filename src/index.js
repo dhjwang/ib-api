@@ -44,7 +44,7 @@ app.use(passport.session());
 app.use(
   cors({
     origin: "https://dhjwang.github.io",
-    credentials: true,
+    // credentials: true,
   })
 );
 
