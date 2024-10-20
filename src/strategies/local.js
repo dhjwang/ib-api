@@ -40,6 +40,7 @@ export default passport.use(
         if (!bcrypt.compareSync(password, result[0].password))
           return done(null, false);
         // console.log("wrong password");
+        console.log(result);
         done(null, result);
       }
     );
