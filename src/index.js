@@ -79,10 +79,10 @@ app.post("/api/auth", (req, res) => {
         console.log("wrong password");
         return res.sendStatus(401);
       } else {
-        console.log(result);
+        console.log(result[0].username);
         const jwttoken = issueJWT(result[0]);
         return res.status(200).json({
-          user: result[0],
+          user: result[0].username,
           token: jwttoken.token,
           expires: jwttoken.expires,
         });
