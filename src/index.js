@@ -70,7 +70,7 @@ app.post("/api/auth", (req, res) => {
     [username],
     (err, result) => {
       if (err) {
-        console.log("could not get user, server error");
+        console.log("could not get user, database error");
         return res.sendStatus(500);
       } else if (result.length === 0) {
         console.log("User not found");
@@ -79,8 +79,8 @@ app.post("/api/auth", (req, res) => {
         console.log("wrong password");
         return res.sendStatus(401);
       } else {
+        console.log(result);
         const jwttoken = issueJWT(result[0]);
-        console.log(jwttoken);
         return res.status(200).json({
           user: result[0],
           token: jwttoken.token,

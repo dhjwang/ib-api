@@ -21,7 +21,6 @@ export default passport.use(
           return done(err.message, null);
         }
         if (result) {
-          console.log(result);
           return done(null, result);
         } else {
           return done(null, false);
