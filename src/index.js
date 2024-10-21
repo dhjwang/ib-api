@@ -73,13 +73,13 @@ app.post("/api/auth", (req, res) => {
         console.log("could not get user, database error");
         return res.sendStatus(500);
       } else if (result.length === 0) {
-        console.log("User not found");
+        console.log(`${username} not found`);
         return res.sendStatus(404);
       } else if (!bcrypt.compareSync(password, result[0].password)) {
         console.log("wrong password");
-        return res.sendStatus(401);
+        return res.sendStatus(404);
       } else {
-        console.log(result[0].username);
+        console.log([result[0].user_id, result[0].username]);
         const jwttoken = issueJWT(result[0]);
         return res.status(200).json({
           user: result[0].username,
