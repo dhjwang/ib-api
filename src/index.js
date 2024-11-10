@@ -104,7 +104,7 @@ app.get(
 const keepAlive = () => {
   console.log("ping");
 };
-setInterval(keepAlive, 60000);
+setInterval(keepAlive, 600000);
 keepAlive();
 
 app.listen(PORT, () => console.log(`Running on Port ${PORT}`));
