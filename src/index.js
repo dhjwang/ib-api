@@ -9,6 +9,7 @@ import scores from "./routes/scores.js";
 import dotenv from "dotenv";
 import cors from "cors";
 import bcrypt from "bcryptjs";
+import fetch from "node-fetch";
 
 db.on("connection", (connection) => {
   console.log("DB connected");
