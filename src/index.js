@@ -101,10 +101,16 @@ app.get(
   }
 );
 
-const keepAlive = () => {
-  console.log("ping");
+app.listen(PORT, () => console.log(`Running on Port ${PORT}`));
+
+const keepAlive = async () => {
+  try {
+    const response = await fetch("https://ib-api.onrender.com/");
+    const status = await response.status;
+    console.log(`Status Code: ${status}`);
+  } catch (error) {
+    console.log(`Error: ${error.message}`);
+  }
 };
 setInterval(keepAlive, 600000);
 keepAlive();
-
-app.listen(PORT, () => console.log(`Running on Port ${PORT}`));
