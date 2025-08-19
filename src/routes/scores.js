@@ -6,41 +6,57 @@ const router = Router();
 
 // add score id
 router.post(
-  "/api/scores",
+  "/",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     const { body } = req;
-    body.host_id = req.user[0].user_id;
-    db.query(`INSERT INTO scores SET ? `, body, (err, results) => {
-      if (err) {
-        console.log(err);
-        res.status(404).send({ msg: err.sqlMessage });
-      } else {
-        return res.status(201).send(results);
+    db.query(
+      `INSERT INTO scores (player_name, lobby_id)
+      SELECT ?,?
+      FROM lobbies
+      WHERE lobby_id = ? AND host_id = ?; `,
+      [body.player_name, body.lobby_id, body.lobby_id, req.user.user_id],
+      (err, result) => {
+        if (err) {
+          console.error(err.message);
+          return res.status(500).send({ msg: err.message });
+        } else if (result.affectedRows === 0) {
+          return res.status(404).send({ msg: "Lobby not found" });
+        } else {
+          return res.status(201).send({
+            newPlayer: {
+              player_name: body.player_name,
+              player_score: 0,
+              score_id: result.insertId,
+            },
+          });
+        }
       }
-    });
+    );
   }
 );
 
 // reset scores
 router.put(
-  "/api/scores/",
+  "/",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    const {
-      query: { lobby },
-      body,
-    } = req;
+    const { lobbyId } = req.query;
 
     db.query(
-      `UPDATE scores SET ?, updated_at = NOW() WHERE lobby_id = ${lobby} AND host_id = ${req.user[0].user_id}`,
-      body,
+      `UPDATE scores
+      JOIN lobbies ON scores.lobby_id = lobbies.lobby_id
+      SET player_score = 0, scores.updated_at = NOW()
+      WHERE scores.lobby_id = ? AND lobbies.host_id = ?`,
+      [lobbyId, req.user.user_id],
       (err, results) => {
         if (err) {
-          console.log(err);
-          res.status(404).send({ msg: err.sqlMessage });
+          console.error(err.message);
+          return res.status(500).send({ msg: err.message });
         } else {
-          res.status(201).send(results);
+          return res
+            .status(200)
+            .send({ msg: "Scores reset", affectedRows: results.affectedRows });
         }
       }
     );
@@ -49,21 +65,19 @@ router.put(
 
 // get scores for a lobby
 router.get(
-  "/api/scores/:id",
+  "/:lobbyId",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    const {
-      params: { id },
-    } = req;
-
+    const { lobbyId } = req.params;
     db.query(
-      `SELECT * FROM scores WHERE lobby_id = ${id} AND host_id = ${req.user[0].user_id}`,
+      `SELECT scores.* FROM scores JOIN lobbies ON scores.lobby_id = lobbies.lobby_id WHERE scores.lobby_id = ? AND lobbies.host_id = ?`,
+      [lobbyId, req.user.user_id],
       (err, results) => {
         if (err) {
-          console.log(err);
-          res.status(404).send({ msg: err.sqlMessage });
+          console.error(err.message);
+          return res.status(500).send({ msg: err.message });
         } else {
-          res.status(200).send(results);
+          return res.status(200).send(results);
         }
       }
     );
@@ -72,22 +86,27 @@ router.get(
 
 // update player score
 router.put(
-  "/api/scores/:id",
+  "/:scoreId",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
     const {
-      params: { id },
+      params: { scoreId },
       body,
     } = req;
     db.query(
-      `UPDATE scores SET ?, updated_at = NOW() WHERE score_id = ${id} AND host_id = ${req.user[0].user_id}`,
-      body,
+      `UPDATE scores
+      JOIN lobbies ON scores.lobby_id = lobbies.lobby_id
+      SET scores.player_score = ?, scores.updated_at = NOW()
+      WHERE scores.score_id = ? AND lobbies.host_id = ?`,
+      [body.player_score, scoreId, req.user.user_id],
       (err, results) => {
         if (err) {
-          console.log(err);
-          res.status(404).send({ msg: err.sqlMessage });
+          console.error(err.message);
+          return res.status(500).send({ msg: err.message });
         } else {
-          res.status(201).send(results);
+          return res
+            .status(200)
+            .send({ msg: "Score updated", affectedRows: results.affectedRows });
         }
       }
     );
@@ -96,21 +115,24 @@ router.put(
 
 //delete player score
 router.delete(
-  "/api/scores/:id",
+  "/:scoreId",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    const {
-      params: { id },
-    } = req;
+    const { scoreId } = req.params;
 
     db.query(
-      `DELETE FROM scores WHERE score_id = ${id} AND host_id = ${req.user[0].user_id}`,
-      (err, results) => {
+      `DELETE scores FROM scores
+      JOIN lobbies ON scores.lobby_id = lobbies.lobby_id
+      WHERE scores.score_id = ? AND lobbies.host_id = ?`,
+      [scoreId, req.user.user_id],
+      (err, result) => {
         if (err) {
-          console.log(err);
-          res.status(404).send({ msg: err.sqlMessage });
+          console.error(err.message);
+          return res.status(500).send({ msg: err.message });
+        } else if (result.affectedRows === 0) {
+          return res.status(404).send({ msg: "Player not found" });
         } else {
-          res.status(201).send(results);
+          return res.status(200).send({ msg: "Player deleted" });
         }
       }
     );

@@ -14,14 +14,14 @@ export default passport.use(
   new Strategy(options, (payload, done) => {
     db.query(
       `SELECT * FROM users WHERE user_id = ?`,
-      [payload.id],
+      [payload.sub],
       (err, result) => {
         if (err) {
-          console.log("could not get user, server error");
-          return done(err.message, null);
+          console.error("JWT strategy DB error:", err.message);
+          return done(err, false);
         }
-        if (result) {
-          return done(null, result);
+        if (result.length > 0) {
+          return done(null, result[0]);
         } else {
           return done(null, false);
         }

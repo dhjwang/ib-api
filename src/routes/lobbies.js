@@ -5,147 +5,118 @@ import passport from "passport";
 const router = Router();
 
 // Id validation middleware
-const validateId = (req, res, next) => {
-  const {
-    params: { id },
-  } = req;
-
-  const parsedId = parseInt(id);
+const validateLobbyId = (req, res, next) => {
+  const { lobbyId } = req.params;
+  const parsedId = parseInt(lobbyId);
   if (isNaN(parsedId)) return res.status(400).send({ msg: "ID not valid" });
 
-  db.query(`SELECT * FROM lobbies WHERE lobby_id = ${id}`, (err, results) => {
-    if (err) {
-      console.log(err);
-      res.status(404).send({ msg: err.sqlMessage });
-    } else if (!results.length) {
-      res.status(404).send({ msg: "ID not valid" });
-    } else {
-      req.lobbyId = id;
-      next();
+  db.query(
+    `SELECT * FROM lobbies WHERE lobby_id = ? AND host_id = ?`,
+    [lobbyId, req.user.user_id],
+    (err, results) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).send({ msg: err.message });
+      } else if (!results.length) {
+        return res.status(404).send({ msg: "No ID found" });
+      } else {
+        req.lobbyId = lobbyId;
+        req.lobby = results[0];
+        next();
+      }
     }
-  });
+  );
 };
 
 // get lobbies for user id
 router.get(
-  "/api/lobbies",
+  "/",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    const {
-      query: { filter, value },
-    } = req;
-    if (filter && value) {
-      db.query(
-        `SELECT * FROM lobbies WHERE ${filter} = '${value}'`,
-        (err, results) => {
-          if (err) {
-            console.log(err);
-            res.status(404).send({ msg: err.sqlMessage });
-          } else {
-            res.status(201).send(results);
-          }
-        }
-      );
-    } else {
-      db.query(
-        `SELECT lobbies.*, COALESCE(nplayers.players,0) as players FROM lobbies 
+    db.query(
+      `SELECT lobbies.*, COALESCE(nplayers.players,0) as players FROM lobbies 
       LEFT JOIN (SELECT lobby_id,COUNT(*) as players FROM scores GROUP BY lobby_id ) as nplayers
       ON lobbies.lobby_id = nplayers.lobby_id
-      WHERE lobbies.host_id = ${req.user[0].user_id};`,
-
-        (err, results) => {
-          if (err) {
-            console.log(err);
-            res.status(404).send({ msg: err.sqlMessage });
-          } else {
-            res
-              .status(201)
-              .send({ username: req.user[0].username, lobbies: results });
-          }
+      WHERE lobbies.host_id = ?;`,
+      [req.user.user_id],
+      (err, results) => {
+        if (err) {
+          console.error(err.message);
+          return res.status(500).send({ msg: err.message });
+        } else {
+          return res
+            .status(200)
+            .send({ username: req.user.username, lobbies: results });
         }
-      );
-    }
+      }
+    );
   }
 );
 
 // add new lobby
 router.post(
-  "/api/lobbies",
+  "/",
   passport.authenticate("jwt", { session: false }),
   (req, res) => {
-    const { body } = req;
-
-    db.query(
-      `INSERT INTO lobbies SET ?, host_id = ${req.user[0].user_id}`,
-      body,
-      (err, results) => {
-        if (err) {
-          console.log(err);
-          res.status(404).send({ msg: err.sqlMessage });
-        } else {
-          db.query(
-            `SELECT lobbies.*, COALESCE(nplayers.players,0) as players FROM lobbies 
+    const lobbyData = {
+      ...req.body,
+      host_id: req.user.user_id,
+    };
+    db.query(`INSERT INTO lobbies SET ?`, lobbyData, (err, result) => {
+      if (err) {
+        console.error(err.message);
+        return res.status(500).send({ msg: err.message });
+      } else {
+        const newLobbyId = result.insertId;
+        db.query(
+          `SELECT lobbies.*, COALESCE(nplayers.players,0) as players FROM lobbies 
           LEFT JOIN (SELECT lobby_id,COUNT(*) as players FROM scores GROUP BY lobby_id ) as nplayers
           ON lobbies.lobby_id = nplayers.lobby_id
-          WHERE lobbies.host_id = ${req.user[0].user_id};`,
-            (err, results) => {
-              if (err) {
-                console.log(err);
-                res.status(404).send({ msg: err.sqlMessage });
-              } else {
-                res
-                  .status(201)
-                  .send({ username: req.user[0].username, lobbies: results });
-              }
+          WHERE lobbies.lobby_id = ? AND lobbies.host_id = ?;`,
+          [newLobbyId, req.user.user_id],
+          (err, results) => {
+            if (err) {
+              console.error(err.message);
+              return res.status(500).send({ msg: err.message });
+            } else {
+              return res.status(201).send({ newLobby: results[0] });
             }
-          );
-        }
+          }
+        );
       }
-    );
+    });
   }
 );
 
 // get a specific lobby
 router.get(
-  "/api/lobbies/:id",
-  validateId,
+  "/:lobbyId",
   passport.authenticate("jwt", { session: false }),
+  validateLobbyId,
   (req, res) => {
-    const { lobbyId } = req;
-
-    db.query(
-      `SELECT * FROM lobbies WHERE lobby_id = '${lobbyId}' AND host_id = ${req.user[0].user_id}`,
-      (err, results) => {
-        if (err) {
-          console.log(err);
-          res.status(404).send({ msg: err.sqlMessage });
-        } else if (!results.length) {
-          res.status(404).send({ msg: "user does not exist" });
-        } else {
-          res.sendStatus(200);
-        }
-      }
-    );
+    return res.status(200).send(req.lobby);
   }
 );
 
 // update lobby round
 router.put(
-  "/api/lobbies/:id",
-  validateId,
+  "/:lobbyId",
   passport.authenticate("jwt", { session: false }),
+  validateLobbyId,
   (req, res) => {
     const { lobbyId, body } = req;
 
     db.query(
-      `UPDATE lobbies SET ?, updated_at = NOW() WHERE lobby_id = ${lobbyId} AND host_id = ${req.user[0].user_id}`,
-      body,
+      `UPDATE lobbies SET ?, updated_at = NOW() WHERE lobby_id = ?`,
+      [body, lobbyId],
       (err, results) => {
         if (err) {
-          console.log(err);
-          res.status(404).send({ msg: err.sqlMessage });
+          console.error(err.message);
+          return res.status(500).send({ msg: err.message });
         } else {
-          res.status(201).send(results);
+          return res
+            .status(200)
+            .send({ msg: "Lobby updated", affectedRows: results.affectedRows });
         }
       }
     );
@@ -154,20 +125,23 @@ router.put(
 
 // delete lobby
 router.delete(
-  "/api/lobbies/:id",
-  validateId,
+  "/:lobbyId",
   passport.authenticate("jwt", { session: false }),
+  validateLobbyId,
   (req, res) => {
     const { lobbyId } = req;
 
     db.query(
-      `DELETE FROM lobbies WHERE lobby_id = ${lobbyId} AND host_id = ${req.user[0].user_id}`,
-      (err, results) => {
+      `DELETE FROM lobbies WHERE lobby_id = ?`,
+      [lobbyId],
+      (err, result) => {
         if (err) {
-          console.log(err);
-          res.status(404).send({ msg: err.sqlMessage });
+          console.error(err.message);
+          return res.status(500).send({ msg: err.message });
+        } else if (result.affectedRows === 0) {
+          return res.status(404).send({ msg: "Lobby not found" });
         } else {
-          res.status(201).send(results);
+          return res.status(200).send({ msg: "Lobby deleted" });
         }
       }
     );

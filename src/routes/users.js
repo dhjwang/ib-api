@@ -4,47 +4,38 @@ import db from "../config/database.js";
 
 const router = Router();
 
-// hash passwords
-const hashPassword = (password) => {
+const hashPassword = async (password) => {
   const saltRounds = 10;
-  const salt = bcrypt.genSaltSync(saltRounds);
-  const hashed = bcrypt.hashSync(password, salt);
-  return hashed;
+  const salt = await bcrypt.genSalt(saltRounds);
+  return await bcrypt.hash(password, salt);
 };
 
 // add users
-router.post("/api/users", (req, res) => {
+router.post("/", async (req, res) => {
   const { body } = req;
-  body.password = hashPassword(body.password);
-  db.query("INSERT INTO users SET ?", body, (err, results) => {
+  if (!body.username?.trim().toLowerCase() || !body.password) {
+    return res
+      .status(400)
+      .json({ msg: "Username and password cannot be empty" });
+  }
+  const user = {
+    username: body.username,
+    password: await hashPassword(body.password),
+  };
+
+  db.query("INSERT INTO users SET ?", user, (err, results) => {
     if (err) {
-      console.log(err);
-      res.status(404).send({ msg: err.sqlMessage });
+      if (err.code === "ER_DUP_ENTRY") {
+        return res.status(409).json({ msg: "Username already taken" });
+      }
+      console.error(err.message);
+      return res.status(500).json({ msg: err.message });
     } else {
-      return res.status(201).send(results);
+      return res
+        .status(201)
+        .json({ userId: results.insertId, msg: "User created" });
     }
   });
-});
-
-// check if username exists
-router.get("/api/users/:username", (req, res) => {
-  const {
-    params: { username },
-  } = req;
-
-  db.query(
-    `SELECT * FROM users WHERE username = '${username}'`,
-    (err, results) => {
-      if (err) {
-        console.log(err);
-        res.status(404).send({ msg: err.sqlMessage });
-      } else if (!results.length) {
-        res.status(201).send({ msg: "user does not exist" });
-      } else {
-        res.sendStatus(200);
-      }
-    }
-  );
 });
 
 export default router;
