@@ -17,6 +17,7 @@ export const getClientIp = (req) => {
 export const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
+  keyGenerator: (req) => getClientIp(req),
   handler: (req, res) => {
     const clientIp = getClientIp(req);
     console.warn(`Login limit hit by IP: ${clientIp}`);
@@ -33,6 +34,7 @@ export const loginLimiter = rateLimit({
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
+  keyGenerator: (req) => getClientIp(req),
   handler: (req, res) => {
     const clientIp = getClientIp(req);
     console.warn(`Rate limit hit by IP: ${clientIp}`);
