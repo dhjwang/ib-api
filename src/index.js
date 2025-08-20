@@ -59,19 +59,21 @@ app.post("/api/auth", loginLimiter, (req, res) => {
     `SELECT * FROM users WHERE username = ?`,
     [username],
     (err, result) => {
+      const clientIp = getClientIp(req);
       if (err) {
         console.error("DB Error on login:", err.message);
         return res.status(500).json({ msg: "Server Error" });
       } else if (result.length === 0) {
         return res.status(401).json({ msg: "Invalid credentials" });
       } else if (!bcrypt.compareSync(password, result[0].password)) {
-        const clientIp = getClientIp(req);
         console.log(
           `Wrong password at IP: ${clientIp}, User: ${result[0].username}`
         );
         return res.status(401).json({ msg: "Invalid credentials" });
       } else {
-        console.log(`User ${result[0].user_id}: ${result[0].username}`);
+        console.log(
+          `Login at IP: ${clientIp}, User ${result[0].user_id}: ${result[0].username}`
+        );
         const jwttoken = issueJWT(result[0]);
         return res.status(200).json({
           user: result[0].username,
