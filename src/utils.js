@@ -6,11 +6,8 @@ const ipBlacklist = new Map();
 
 export const getClientIp = (req) => {
   const forwarded = req.headers["x-forwarded-for"];
-  console.log(forwarded);
   if (forwarded) {
     const ips = forwarded.split(",");
-    console.log(ips[0]);
-    console.log(ips[0].trim());
     return ips[0].trim();
   }
   return req.ip;
