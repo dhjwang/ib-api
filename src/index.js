@@ -16,6 +16,7 @@ import {
   issueJWT,
   keepAlive,
   blockIPs,
+  getClientIp,
 } from "./utils.js";
 
 dotenv.config();
@@ -64,8 +65,9 @@ app.post("/api/auth", loginLimiter, (req, res) => {
       } else if (result.length === 0) {
         return res.status(401).json({ msg: "Invalid credentials" });
       } else if (!bcrypt.compareSync(password, result[0].password)) {
+        const clientIp = getClientIp(req);
         console.log(
-          `Wrong password at IP: ${req.ip}, User: ${result[0].username}`
+          `Wrong password at IP: ${clientIp}, User: ${result[0].username}`
         );
         return res.status(401).json({ msg: "Invalid credentials" });
       } else {
